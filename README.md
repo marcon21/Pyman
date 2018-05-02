@@ -1,4 +1,4 @@
 # Pyman
 A copy of Pacman in Pygame
 
-Thanks to Giacomo Tezza and Enea Strambini.
+Thanks to Enea Strambini and Giacomo Tezza .
