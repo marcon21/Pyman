@@ -29,7 +29,8 @@ def node_position(map, color, block_size, WIDTH):
 
 
 def djikstra(start_node, destination_node, node_position_list, visited_node):
-    """Algorithm that find the shortest path from the starting node to the destination node passing throug a node map, given each of the node position
+    """Algorithm that find the shortest path from the starting node to the
+    destination node passing throug a node map, given each of the node position
     """
     ghost = True
     nearest_node = None
@@ -41,7 +42,7 @@ def djikstra(start_node, destination_node, node_position_list, visited_node):
         ghost = False
         adjacent_nodes = []
 
-        # questa funzione passa attraverso i muri, ERRORE!!!!       
+        # questa funzione passa attraverso i muri, ERRORE!!!!
         for node in node_position_list:
             if node[0] == start_node[0] or node[1] == start_node[1]:
                 adjacent_nodes.append(node)
@@ -66,9 +67,9 @@ def djikstra(start_node, destination_node, node_position_list, visited_node):
 
     return visited_node
 
-lista = node_position("./image/node_map.png", (0, 255, 0), 32, 896)
-
-print(djikstra((32, 192), (32, 32), lista, []))
+if __name__ == "__main__":
+    lista = node_position("./image/node_map.png", (0, 255, 0), 32, 896)
+    print(djikstra((32, 192), (32, 32), lista, []))
 
 
 """
