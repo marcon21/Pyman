@@ -20,7 +20,7 @@ clock = pygame.time.Clock()
 background_color = (150, 150, 150) # RGB value
 speed = 2
 touched = False
-
+a = 1
 
 class Pyman(pygame.sprite.Sprite):
 
@@ -36,59 +36,48 @@ class Pyman(pygame.sprite.Sprite):
 
     def touch_node(self):
         if (self.rect.x, self.rect.y) in node_list:
-            print("collide")
             return True
-
-
-    def touch_wall(self):
-        global touched
-        if pygame.sprite.spritecollide(self, wall_group, False) != [] and touched == False:
-            touched = True
-            return True
-
 
     def move(self, direction):
-        global touched, new_direction
-        if pygame.sprite.spritecollide(self, wall_group, False) != [] and touched == True and new_direction != direction:
-            if direction == "up":
-                self.rect.y += self.speed * -1
-                touched = False
-            if direction == "down":
-                self.rect.y += self.speed * 1
-                touched = False
-            if direction == "right":
-                self.rect.x += self.speed * 1
-                touched = False
-            if direction == "left":
-                self.rect.x += self.speed * -1
-                touched = False
-        elif pygame.sprite.spritecollide(self, wall_group, False) != [] and touched == False:
-            touched = True
-        else:
-            if direction == "up":
-                self.rect.y += self.speed * -1
-                touched = False
-            if direction == "down":
-                self.rect.y += self.speed * 1
-                touched = False
-            if direction == "right":
-                self.rect.x += self.speed * 1
-                touched = False
-            if direction == "left":
-                self.rect.x += self.speed * -1
-                touched = False
-
-class Ghost(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-
-
+        global a
+        if pygame.sprite.spritecollide(self, wall_group, False) != []:
+            a = -1.1
+        if direction == "up":
+            self.rect.y += self.speed * -1 * a
+            a = 1
+        if direction == "down":
+            self.rect.y += self.speed * 1 * a
+            a = 1
+        if direction == "right":
+            self.rect.x += self.speed * 1 * a
+            a = 1
+        if direction == "left":
+            self.rect.x += self.speed * -1 * a
+            a = 1
 
 pyman_image = pygame.image.load("./image/pyman.png")
 # pyman_image = pyman_image.convert_alpha()
 pyman_image = pygame.transform.scale(pyman_image, (block_size - 2, block_size - 2))
 pyman = Pyman(pyman_image, 32, 32, speed)
 pyman_group = pygame.sprite.Group(pyman)
+
+
+class Ghost(pygame.sprite.Sprite):
+    def __init__(self, image, x, y, speed):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = speed
+
+    def move(self, pacman_rect):
+        global node_list
+        pos_pacman = x_pac, y_pac = pacman_rect.x, pacman_rect.y
+
+
+
+
 
 
 ### Create Map and add the walls in a group
@@ -112,7 +101,7 @@ wall_group = pygame.sprite.Group(wall_array)
 node_list = node_position(map_node_image, (0, 255, 0), block_size, WIDTH)
 
 # End of Game Values
-direction = "right"
+direction = ""
 new_direction = direction
 
 # Game loop
