@@ -19,8 +19,9 @@ clock = pygame.time.Clock()
 
 background_color = (150, 150, 150) # RGB value
 speed = 2
-touched = False
+touch = False
 a = 1
+
 
 class Pyman(pygame.sprite.Sprite):
 
@@ -38,6 +39,29 @@ class Pyman(pygame.sprite.Sprite):
         if (self.rect.x, self.rect.y) in node_list:
             return True
 
+
+    def wall_collide(self):
+        if pygame.sprite.spritecollide(self, wall_group, False) != []:
+            return True
+        else:
+            return False
+
+
+    def move(self, direction, prev_direction):
+        if self.wall_collide() and direction != prev_direction:
+            if direction == "up":
+                self.rect.y += self.speed * -1 * a
+            if direction == "down":
+                self.rect.y += self.speed * 1 * a
+            if direction == "right":
+                self.rect.x += self.speed * 1 * a
+            if direction == "left":
+                self.rect.x += self.speed * -1 * a
+
+
+
+
+            """
     def move(self, direction):
         global a
         if pygame.sprite.spritecollide(self, wall_group, False) != []:
@@ -54,7 +78,7 @@ class Pyman(pygame.sprite.Sprite):
         if direction == "left":
             self.rect.x += self.speed * -1 * a
             a = 1
-
+"""
 pyman_image = pygame.image.load("./image/pyman.png")
 # pyman_image = pyman_image.convert_alpha()
 pyman_image = pygame.transform.scale(pyman_image, (block_size - 2, block_size - 2))
@@ -101,7 +125,8 @@ wall_group = pygame.sprite.Group(wall_array)
 node_list = node_position(map_node_image, (0, 255, 0), block_size, WIDTH)
 
 # End of Game Values
-direction = ""
+direction = "right"
+prev_direction = direction
 new_direction = direction
 
 # Game loop
@@ -128,9 +153,10 @@ while not game_ended:
     if keys_pressed[K_d]:
         new_direction = "right"
 
-    pyman.move(direction)
+    pyman.move(direction, prev_direction)
 
     if pyman.touch_node():
+        prev_direction = direction
         direction = new_direction
     # Game logic
 
