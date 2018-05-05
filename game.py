@@ -37,28 +37,24 @@ class Pyman(pygame.sprite.Sprite):
 
     def touch_node(self):   #detect collision between PyMan and nodes
         if (self.rect.x, self.rect.y) in node_list:
-
             return True
 
     def wall_collide(self): #detect if PyMan is colliding with a wall
         if pygame.sprite.spritecollide(self, wall_group, False) != []:
-
             return True
 
 
     def position(self, non_touching_position):  #return the position of PyMan
         if pygame.sprite.spritecollide(self, wall_group, False) == []:
-
             return (self.rect.x, self.rect.y)
         else:
             self.rect.x  = non_touching_position[0]
             self.rect.y = non_touching_position[1]
-
             return non_touching_position
 
 
     def move(self, direction):  #give PyMan the ability to move
-
+        self.teleport()
         if direction == "up":
             self.rect.y += self.speed * -1
         if direction == "down":
@@ -67,6 +63,13 @@ class Pyman(pygame.sprite.Sprite):
             self.rect.x += self.speed * 1
         if direction == "left":
             self.rect.x += self.speed * -1
+
+    def teleport(self):     #allow PyMan to teleport when he's outside the map 
+        if self.rect.x < -self.rect.width:
+            self.rect.x = WIDTH
+        if self.rect.x > WIDTH:
+            self.rect.x = -self.rect.width
+
 
 
 pyman_image = pygame.image.load("./image/pyman.png")
