@@ -25,10 +25,10 @@ def create_map(map_image, dictionary, block_size, width):
     return map
 
 def draw_map(map_array, map_image, window):
-    for block in map_array:
-        block.draw(window, block.rect.x, block.rect.y)
     map_image = pygame.image.load(map_image)
     pygame.Surface.blit(window, map_image, (0, 0))
+    for block in map_array:
+        block.draw(window, block.rect.x, block.rect.y)
     return
 
 
