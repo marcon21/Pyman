@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 from generate_map import create_map, draw_map
+from djikstra import *
 
 pygame.init()
 
@@ -17,9 +18,14 @@ clock = pygame.time.Clock()
 # Game Values
 
 background_color = (150, 150, 150) # RGB value
+speed = 2
+non_touching_position = (32, 32)
 
 
 class Pyman(pygame.sprite.Sprite):
+    """The class of the main character"""
+
+
     def __init__(self, image, x, y, speed):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
@@ -28,40 +34,79 @@ class Pyman(pygame.sprite.Sprite):
         self.rect.y = y
         self.speed = speed
 
-    def move(self, direction):
-        if len(pygame.sprite.spritecollide(self, wall_group, False)) == 0:
-            if direction == "up":
-                self.rect.y += self.speed * -1
-            if direction == "down":
-                self.rect.y += self.speed * 1
-            if direction == "right":
-                self.rect.x += self.speed * 1
-            if direction == "left":
-                self.rect.x += self.speed * -1
+
+    def touch_node(self):   #detect collision between PyMan and nodes
+        if (self.rect.x, self.rect.y) in node_list:
+            return True
+
+    def wall_collide(self): #detect if PyMan is colliding with a wall
+        if pygame.sprite.spritecollide(self, wall_group, False) != []:
+            return True
 
 
-class Ghost(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
+    def position(self, non_touching_position):  #return the position of PyMan
+        if pygame.sprite.spritecollide(self, wall_group, False) == []:
+            return (self.rect.x, self.rect.y)
+        else:
+            self.rect.x  = non_touching_position[0]
+            self.rect.y = non_touching_position[1]
+            return non_touching_position
+
+
+    def move(self, direction):  #give PyMan the ability to move
+        self.teleport()
+        if direction == "up":
+            self.rect.y += self.speed * -1
+        if direction == "down":
+            self.rect.y += self.speed * 1
+        if direction == "right":
+            self.rect.x += self.speed * 1
+        if direction == "left":
+            self.rect.x += self.speed * -1
+
+    def teleport(self):     #allow PyMan to teleport when he's outside the map 
+        if self.rect.x < -self.rect.width:
+            self.rect.x = WIDTH
+        if self.rect.x > WIDTH:
+            self.rect.x = -self.rect.width
 
 
 
 pyman_image = pygame.image.load("./image/pyman.png")
-# pyman_image = pyman_image.convert_alpha()
-pyman_image = pygame.transform.scale(pyman_image, (block_size, block_size))
-pyman = Pyman(pyman_image, WIDTH / 2, HEIGHT / 2 - 50, 5)
+pyman_image = pygame.transform.scale(pyman_image, (block_size - 2,
+                                                   block_size - 2))
+
+pyman = Pyman(pyman_image, 32, 32, speed)   #create PyMan instance
 pyman_group = pygame.sprite.Group(pyman)
 
 
-### Create Map and add the walls in a group
+class Ghost(pygame.sprite.Sprite):
+    """The class for the 4 ghosts"""
+
+
+    def __init__(self, image, x, y, speed):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = speed
+
+
+    def move(self, pacman_rect):
+        global node_list
+        pos_pacman = x_pac, y_pac = pacman_rect.x, pacman_rect.y
+
 
 map_image = "./image/map.png"
+map_node_image = "./image/node_map.png"
 dict_map = {
     (0, 0, 0):  ("./image/black_wall.png", True), # wall
     (255, 255, 255): ("./image/bg.png", False) # bg
 }
 
-map = create_map(map_image, dict_map, block_size, WIDTH)
+
+map = create_map(map_image, dict_map, block_size, WIDTH) #create the map
 wall_array = []
 for blocks in map:
     if blocks.wall == True:
@@ -69,7 +114,11 @@ for blocks in map:
 
 wall_group = pygame.sprite.Group(wall_array)
 
+node_list = node_position(map_node_image, (0, 255, 0), block_size, WIDTH)
+
 # End of Game Values
+direction = ""
+new_direction = direction
 
 # Game loop
 game_ended = False
@@ -85,15 +134,31 @@ while not game_ended:
                 break
 
     keys_pressed = pygame.key.get_pressed()
-    if keys_pressed[K_s]:
-        pyman.move("down")
-    if keys_pressed[K_w]:
-        pyman.move("up")
-    if keys_pressed[K_a]:
-        pyman.move("left")
-    if keys_pressed[K_d]:
-        pyman.move("right")
 
+    #detect if any key is pressed
+    if keys_pressed[K_s]:
+        new_direction = "down"
+    if keys_pressed[K_w]:
+        new_direction = "up"
+    if keys_pressed[K_a]:
+        new_direction = "left"
+    if keys_pressed[K_d]:
+        new_direction = "right"
+
+    #allow PyMan to move only if it's on a node or the movement is opposite
+    if not pyman.wall_collide():
+        if (pyman.touch_node() or
+            direction == "down" and new_direction == "up" or
+            direction == "up" and new_direction == "down" or
+            direction == "left" and new_direction == "right" or
+            direction == "right" and new_direction == "left"):
+            direction = new_direction
+    else:   #allow PyMan to get out of the wall...
+        direction = new_direction
+
+    #getting the position that is not touching the wall
+    non_touching_position = pyman.position(non_touching_position)
+    pyman.move(direction)
     # Game logic
 
 
