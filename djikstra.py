@@ -28,10 +28,14 @@ def node_position(map, color, block_size, WIDTH):
     return nodes_pos
 
 
-def djikstra(start_node, destination_node, node_position_list, visited_node):
-    """Algorithm that find the shortest path from the starting node to the
+def dijkstra(node_map, ghost, pyman):
+    pass
+
+"""
+def fiveStar(start_node, destination_node, node_position_list, visited_node):
+    ""Algorithm that find the shortest path from the starting node to the
     destination node passing throug a node map, given each of the node position
-    """
+    ""
     ghost = True
     nearest_node = None
     distance = None
@@ -66,48 +70,7 @@ def djikstra(start_node, destination_node, node_position_list, visited_node):
 
 
     return visited_node
-
+"""
 if __name__ == "__main__":
     lista = node_position("./image/node_map.png", (0, 255, 0), 32, 896)
     print(djikstra((32, 192), (32, 32), lista, []))
-
-
-"""
-print(node_position_list)
-print(start_node)
-node_position_list.remove(start_node)
-adjacent_node = []
-distance = None
-best_node = None
-if node_position_list == []:
-    return destination_node
-else:
-    for node in node_position_list: #Finding the adjacent node
-        if node[0] == start_node[0] or node[1] == start_node[1]:
-            adjacent_node.append(node)
-
-    for node in adjacent_node:
-        #Calculating the distance from the start node
-        new_distance = math.sqrt(
-            (start_node[0] - node[0])**2 +
-            (start_node[1] - node[1])**2
-            )
-        if distance != None:    #Finding the nearest node
-            if distance > new_distance:
-                distance = new_distance
-                best_node = node
-        else:
-            distance = new_distance
-            best_node = node
-
-    print(best_node)
-    best_node_list.append(best_node)
-
-    return djikstra(best_node, destination_node, node_position_list, best_node_list)
-
-lista = node_position("./image/node_map.png", (0, 255, 0), 32, 896)
-lista.append((364, 32))
-print(lista)
-
-print(djikstra((364, 32), (64, 38), lista, []))
-"""
