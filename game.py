@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 from generate_map import create_map, draw_map
-from djikstra import *
+from node_position import node_position
 from math import sqrt
 
 pygame.init()
