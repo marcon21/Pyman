@@ -76,7 +76,6 @@ pyman = Pyman(pyman_image, 32, 32, speed)   #create PyMan instance
 pyman_group = pygame.sprite.Group(pyman)
 
 
-
 class Ghost(pygame.sprite.Sprite):
 
     """The class for the 4 ghosts"""
@@ -97,26 +96,19 @@ class Ghost(pygame.sprite.Sprite):
             if node != self.last_node:
                 if [node[0], node[1]] != [self.rect.x, self.rect.y]:
                     if node[0] == self.rect.x or node[1] == self.rect.y:
-                        distanceGhostToNode = distance([self.rect.x, self.rect.y], node)
-                        distanceNodeToPacman = distance(node, pacman_rect)
-                        totalDistance = distanceGhostToNode + distanceNodeToPacman
-                        #print(totalDistance, node)
-                        if totalDistance < min_dist:
-                            min_dist = totalDistance
-                            nearest_node = node
-        """
-        if distance([self.rect.x, self.rect.y], pacman_rect) < min_dist:
-                nearest_node = [pacman_rect[0], pacman_rect[1]]
-        """
-        print(nearest_node)
-
+                        if not self.collide_wall(self.postion_node(node)):
+                            distanceGhostToNode = distance([self.rect.x, self.rect.y], node)
+                            distanceNodeToPacman = distance(node, pacman_rect)
+                            totalDistance = distanceGhostToNode + distanceNodeToPacman
+                            if totalDistance < min_dist:
+                                min_dist = totalDistance
+                                nearest_node = node
         return nearest_node
 
 
     def move(self):
         end_pos = self.nearest_node([pyman.rect[0], pyman.rect[1]], node_list)
         if self.rect.x > end_pos[0]:
-        #end_pos = [pyman.rect[0], pyman.rect[1]]
             self.rect.x -= self.speed
         if self.rect.x < end_pos[0]:
             self.rect.x += self.speed
@@ -133,6 +125,34 @@ class Ghost(pygame.sprite.Sprite):
                 self.last_node = node
                 return None
 
+    def collide_wall(self, direction):
+        global block_size, wall_position
+        if direction == "up":
+            if (self.rect.x, self.rect.y - block_size) in wall_position:
+                return True
+        elif direction == "down":
+            if (self.rect.x, self.rect.y + block_size) in wall_position:
+                return True
+        elif direction == "left":
+            if (self.rect.x - block_size, self.rect.y) in wall_position:
+                return True
+        elif direction == "right":
+            if (self.rect.x + block_size, self.rect.y) in wall_position:
+                return True
+        else:
+                return False
+
+    def postion_node(self, node):
+        if node[0] == self.rect.x:
+            if node[1] > self.rect.y:
+                return "down"
+            else:
+                return "up"
+        else:
+            if node[0] > self.rect.x:
+                return "right"
+            else:
+                return "left"
 
 
 def distance(a, b):
@@ -168,6 +188,9 @@ for blocks in map:
         wall_array.append(blocks)
 
 wall_group = pygame.sprite.Group(wall_array)
+wall_position = []
+for walls in wall_array:
+    wall_position.append((walls.rect.x, walls.rect.y))
 
 node_list = node_position(map_image, (0, 255, 0), block_size, WIDTH)
 
