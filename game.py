@@ -26,6 +26,7 @@ non_touching_position = (32, 32)
 class Pyman(pygame.sprite.Sprite):
     """The class of the main character"""
 
+
     def __init__(self, image, x, y, speed):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
@@ -34,13 +35,16 @@ class Pyman(pygame.sprite.Sprite):
         self.rect.y = y
         self.speed = speed
 
+
     def touch_node(self):   #detect collision between PyMan and nodes
         if (self.rect.x, self.rect.y) in node_list:
             return True
 
+
     def wall_collide(self): #detect if PyMan is colliding with a wall
         if pygame.sprite.spritecollide(self, wall_group, False) != []:
             return True
+
 
     def position(self, non_touching_position):  #return the position of PyMan
         if pygame.sprite.spritecollide(self, wall_group, False) == []:
@@ -49,6 +53,7 @@ class Pyman(pygame.sprite.Sprite):
             self.rect.x  = non_touching_position[0]
             self.rect.y = non_touching_position[1]
             return non_touching_position
+
 
     def move(self, direction):  #give PyMan the ability to move
         self.teleport()
@@ -61,6 +66,7 @@ class Pyman(pygame.sprite.Sprite):
         if direction == "left":
             self.rect.x += self.speed * -1
 
+
     def teleport(self):     #allow PyMan to teleport when he's outside the map
         if self.rect.x < -self.rect.width:
             self.rect.x = WIDTH
@@ -68,17 +74,18 @@ class Pyman(pygame.sprite.Sprite):
             self.rect.x = -self.rect.width
 
 
-pyman_image = pygame.image.load("./image/pyman.png")
+pyman_image = pygame.image.load("./image/pyman.png")    #giving PyMan a shape
 pyman_image = pygame.transform.scale(pyman_image, (block_size - 2,
                                                    block_size - 2))
 
 pyman = Pyman(pyman_image, 32, 32, speed)   #create PyMan instance
-pyman_group = pygame.sprite.Group(pyman)
+pyman_group = pygame.sprite.Group(pyman)    #giving PyMan a place to live in!
 
 
 class Ghost(pygame.sprite.Sprite):
-
     """The class for the 4 ghosts"""
+
+
     def __init__(self, image, x, y, speed):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
@@ -88,15 +95,20 @@ class Ghost(pygame.sprite.Sprite):
         self.speed = speed
         self.last_node = (x, y)
 
+    #finding the nearest node to the ghost
     def nearest_node(self, pacman_rect, node_list):
         nearest_node = None
         min_dist = WIDTH + HEIGHT
 
         for node in node_list:
             if node != self.last_node:
+                #the node can not be the same position as the ghost
                 if [node[0], node[1]] != [self.rect.x, self.rect.y]:
+                    #finding adjacent nodes
                     if node[0] == self.rect.x or node[1] == self.rect.y:
+                        #checking if colliding with walls
                         if not self.collide_wall(self.postion_node(node)):
+                            #finding the shortest path
                             distanceGhostToNode = distance([self.rect.x, self.rect.y], node)
                             distanceNodeToPacman = distance(node, pacman_rect)
                             totalDistance = distanceGhostToNode + distanceNodeToPacman
@@ -106,7 +118,7 @@ class Ghost(pygame.sprite.Sprite):
         return nearest_node
 
 
-    def move(self):
+    def move(self): #give the ghost the ability to move
         end_pos = self.nearest_node([pyman.rect[0], pyman.rect[1]], node_list)
         if self.rect.x > end_pos[0]:
             self.rect.x -= self.speed
@@ -119,12 +131,13 @@ class Ghost(pygame.sprite.Sprite):
             self.rect.y += self.speed
 
 
-    def refresh_last_node(self, node_list):
+    def refresh_last_node(self, node_list): #refresh the last node position
         for node in node_list:
             if node == (self.rect.x, self.rect.y):
                 self.last_node = node
                 return None
 
+    #detect if the ghost collide with the wall
     def collide_wall(self, direction):
         global block_size, wall_position
         if direction == "up":
@@ -142,6 +155,7 @@ class Ghost(pygame.sprite.Sprite):
         else:
                 return False
 
+    #the position of the node in reference to the PyMan one
     def postion_node(self, node):
         if node[0] == self.rect.x:
             if node[1] > self.rect.y:
@@ -155,33 +169,34 @@ class Ghost(pygame.sprite.Sprite):
                 return "left"
 
 
-def distance(a, b):
+def distance(a, b): #function that find the distance between point a and b
     delta_x = a[0] - b[0]
     delta_y = a[1] - b[1]
     return sqrt(delta_x ** 2 + delta_y ** 2)
 
 
-ghost_image = pygame.image.load("./image/ghost.png")
+ghost_image = pygame.image.load("./image/ghost.png") #giving ghosts some shape!
 ghost_image = pygame.transform.scale(ghost_image, (block_size,
                                                    block_size))
 
 ghost = Ghost(ghost_image, 256, 32, speed)   #create Ghost instance
-ghost_group = pygame.sprite.Group(ghost)
+ghost_group = pygame.sprite.Group(ghost)    #giving ghosts a cool group!
 
 
 
-
+#acquiring map images
 map_image = "./image/PixelMap.png"
 map_bg = "./image/PacmanLevel-1.png"
 
-dict_map = {
+dict_map = {    #a dictionary used for the creation of the map
     (0, 0, 0):  ("./image/trasparente.png", True), # wall
     (255, 255, 255): ("./image/trasparente.png", False), # bg
     (0, 255, 0): ("./image/bg.png", False), # node
     (0, 0, 255): ("./image/trasparente.png", False) # node
 }
 
-map = create_map(map_image, dict_map, block_size, WIDTH) #create the map
+#creating the map
+map = create_map(map_image, dict_map, block_size, WIDTH)
 wall_array = []
 for blocks in map:
     if blocks.wall == True:
@@ -192,11 +207,12 @@ wall_position = []
 for walls in wall_array:
     wall_position.append((walls.rect.x, walls.rect.y))
 
+#creating a list of the node(crossings) of the map
 node_list = node_position(map_image, (0, 255, 0), block_size, WIDTH)
 
 # End of Game Values
-direction = ""
-new_direction = direction
+direction = "" #direction of PyMan
+new_direction = direction   #new direction of PyMan
 
 # Game loop
 game_ended = False
@@ -234,12 +250,13 @@ while not game_ended:
     else:   #allow PyMan to get out of the wall...
         direction = new_direction
 
-    #getting the position that is not touching the wall
+    #getting the position that is not touching the wall (PyMan)
     non_touching_position = pyman.position(non_touching_position)
+    pyman.move(direction)
+
+    #(ghosts)
     ghost.refresh_last_node(node_list)
     ghost.move()
-    pyman.move(direction)
-    # Game logic
 
     # Display update
     draw_map(map, map_bg, window)
