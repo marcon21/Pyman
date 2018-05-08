@@ -76,10 +76,10 @@ pyman = Pyman(pyman_image, 32, 32, speed)   #create PyMan instance
 pyman_group = pygame.sprite.Group(pyman)
 
 
+
 class Ghost(pygame.sprite.Sprite):
+
     """The class for the 4 ghosts"""
-
-
     def __init__(self, image, x, y, speed):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
@@ -87,56 +87,58 @@ class Ghost(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.speed = speed
+        self.last_node = (x, y)
 
     def nearest_node(self, pacman_rect, node_list):
-        nearest_node = node_list[10]
+        nearest_node = None
         min_dist = WIDTH + HEIGHT
 
         for node in node_list:
-            if [node[0], node[1]] != [self.rect.x, self.rect.y]:
-                if node[0] == self.rect.x or node[1] == self.rect.y:
-                    distanceGhostToNode = distance([self.rect.x, self.rect.y], node)
-                    distanceNodeToPacman = distance(node, [pacman_rect[0], pacman_rect[1]])
-                    totalDistance = distanceGhostToNode + distanceNodeToPacman
-                    # print(totalDistance, node)
-                    if totalDistance < min_dist:
-                        min_dist = totalDistance
-                        nearest_node = node
-
-
-        """if pacman_rect.x == self.rect.x or pacman_rect.y == self.rect.y:
-            if min[1] > distance(g_pos, p_pos):
-                min = (p_pos, None)
-                """
+            if node != self.last_node:
+                if [node[0], node[1]] != [self.rect.x, self.rect.y]:
+                    if node[0] == self.rect.x or node[1] == self.rect.y:
+                        distanceGhostToNode = distance([self.rect.x, self.rect.y], node)
+                        distanceNodeToPacman = distance(node, pacman_rect)
+                        totalDistance = distanceGhostToNode + distanceNodeToPacman
+                        #print(totalDistance, node)
+                        if totalDistance < min_dist:
+                            min_dist = totalDistance
+                            nearest_node = node
+        """
+        if distance([self.rect.x, self.rect.y], pacman_rect) < min_dist:
+                nearest_node = [pacman_rect[0], pacman_rect[1]]
+        """
+        print(nearest_node)
 
         return nearest_node
 
 
     def move(self):
         end_pos = self.nearest_node([pyman.rect[0], pyman.rect[1]], node_list)
-        print((self.rect.x, self.rect.y), "SELF")
-        print(end_pos, "END POS")
-        print((pyman.rect.x, pyman.rect.y), "Pyman")
-        print()
+        if self.rect.x > end_pos[0]:
+        #end_pos = [pyman.rect[0], pyman.rect[1]]
+            self.rect.x -= self.speed
+        if self.rect.x < end_pos[0]:
+            self.rect.x += self.speed
 
-        if self.rect.x != end_pos[0]:
-            if self.rect.x > end_pos[0]:
-                self.rect.x -= self.speed / 2
-            else:
-                self.rect.x += self.speed / 2
-
-        if self.rect.y != end_pos[1]:
-            if self.rect.y > end_pos[0]:
-                self.rect.y -= self.speed / 2
-            else:
-                self.rect.y += self.speed / 2
+        if self.rect.y > end_pos[1]:
+            self.rect.y -= self.speed
+        if self.rect.y < end_pos[1]:
+            self.rect.y += self.speed
 
 
-def distance(startPos, endPos):
-    delta_x = abs(startPos[0] - endPos[0])
-    delta_y = abs(startPos[1] - endPos[1])
-    delta = sqrt(delta_x ** 2 + delta_y ** 2)
-    return delta
+    def refresh_last_node(self, node_list):
+        for node in node_list:
+            if node == (self.rect.x, self.rect.y):
+                self.last_node = node
+                return None
+
+
+
+def distance(a, b):
+    delta_x = a[0] - b[0]
+    delta_y = a[1] - b[1]
+    return sqrt(delta_x ** 2 + delta_y ** 2)
 
 
 ghost_image = pygame.image.load("./image/ghost.png")
@@ -211,8 +213,9 @@ while not game_ended:
 
     #getting the position that is not touching the wall
     non_touching_position = pyman.position(non_touching_position)
-    pyman.move(direction)
+    ghost.refresh_last_node(node_list)
     ghost.move()
+    pyman.move(direction)
     # Game logic
 
     # Display update
