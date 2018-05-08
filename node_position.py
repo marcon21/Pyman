@@ -25,4 +25,4 @@ def node_position(map, color, block_size, WIDTH):
         if x == WIDTH:  # Check the end of the row
             x, y = 0, y + block_size
 
-return nodes_pos
+    return nodes_pos
