@@ -3,8 +3,10 @@ import time
 from pygame.locals import *
 from generate_map import create_map, draw_map
 from node_position import node_position
-from coins import create_coins, place_coins
 from math import sqrt
+from coins import create_coins, place_coins
+import random
+from random import randint as rand
 
 pygame.init()
 
@@ -72,17 +74,17 @@ class Pyman(pygame.sprite.Sprite):
         if self.direction == "left":
             self.rect.x += self.speed * -1
 
-    def teleport(self): #allow PyMan to teleport when he's outside the map
+    def teleport(self):     #allow PyMan to teleport when he's outside the map
         if self.rect.x < -self.rect.width:
             self.rect.x = WIDTH
         if self.rect.x > WIDTH:
             self.rect.x = -self.rect.width
 
-    def check_if_dead(self):  #check if PyMan is being touched by any Ghost
+    def check_if_dead(self):
         if pygame.sprite.spritecollide(self, ghost_group, False) != []:
             self.restart()
 
-    def restart(self): #restart the game after PyMan has been catched
+    def restart(self):
         global ghost_group, game_over_image
         self.life -= 1
         if self.life <= 0:
@@ -100,8 +102,9 @@ class Pyman(pygame.sprite.Sprite):
             for ghosts in ghost_group:
                 ghosts.rect.x =  ghosts.start_x
                 ghosts.rect.y = ghosts.start_y
+                ghosts.in_home = True
 
-    def life_display(self): #display the current life
+    def life_display(self):
         for life in range(self.life):
             window.blit(self.life_image,
                         (self.life_pos[0] + self.rect_life.width * life + 1,
@@ -111,18 +114,15 @@ class Pyman(pygame.sprite.Sprite):
     def get_points(self, screen): #calculate points for PyMan
         if pygame.sprite.spritecollide(self, small_coin_group, True) != []:
             self.score += 10
-            print(self.score)
 
         if pygame.sprite.spritecollide(self, big_coin_group, True) != []:
             self.score += 50
-            print(self.score)
 
         pygame.font.init()
         myfont = pygame.font.SysFont('Comic Sans MS', 30)
         textsurface = myfont.render(str(self.score), False, (255, 255, 0))
         screen.blit(textsurface,(20,20))
 
-#giving PyMan a shape!
 pyman_image = pygame.image.load("./image/pyman.png")
 pyman_image = pygame.transform.scale(pyman_image, (block_size - 2,
                                                    block_size - 2))
@@ -133,8 +133,9 @@ life_image = pygame.transform.scale(life_image,
                                     block_size + block_size // 2))
 
 pyman = Pyman(pyman_image, #create PyMan instance
-              block_size * 1,
-              block_size * 1, speed,
+              block_size * 13,
+              block_size * 17,
+              speed,
               [0, HEIGHT / 2 - 5 * block_size],
               life_image)
 
@@ -146,8 +147,8 @@ game_over_image = pygame.image.load("./image/game_over.png")
 game_over_image = pygame.transform.scale(game_over_image,
                                         (game_over_width,
                                         int(game_over_width / 1.7777)))
-
 class Ghost(pygame.sprite.Sprite):
+
     """The class for the 4 ghosts"""
     def __init__(self, image, x, y, speed):
         pygame.sprite.Sprite.__init__(self)
@@ -159,6 +160,8 @@ class Ghost(pygame.sprite.Sprite):
         self.rect.y = self.start_y
         self.speed = speed
         self.last_node = (x, y)
+        self.in_home = True
+        self.type = type
 
     #finding the nearest node to the ghost
     def nearest_node(self, pacman_rect, node_list):
@@ -185,25 +188,129 @@ class Ghost(pygame.sprite.Sprite):
         return nearest_node
 
 
-    def move(self): #give the ghost the ability to move
-        end_pos = self.nearest_node([pyman.rect[0], pyman.rect[1]], node_list)
-        if self.rect.x > end_pos[0]:
-            self.rect.x -= self.speed
-        if self.rect.x < end_pos[0]:
-            self.rect.x += self.speed
 
-        if self.rect.y > end_pos[1]:
-            self.rect.y -= self.speed
-        if self.rect.y < end_pos[1]:
-            self.rect.y += self.speed
+    def nearest_node2(self, pacman_rect, node_list):
+        nearest_node = node_list[0]
+        min_dist = WIDTH + HEIGHT
+
+        for node in node_list:
+            if node != self.last_node:
+                if [node[0], node[1]] != [self.rect.x, self.rect.y]:
+                    if node[0] == self.rect.x or node[1] == self.rect.y:
+                        if not self.collide_wall(self.postion_node(node)):
+                            distanceGhostToNode = distance([self.rect.x, self.rect.y], node)
+                            distanceNodeToPacman = distance(
+                                node,
+                                (pacman_rect[0] + block_size,
+                                 pacman_rect[1] + block_size)
+                                )
+                            totalDistance = distanceGhostToNode + distanceNodeToPacman
+                            if totalDistance < min_dist:
+                                min_dist = totalDistance
+                                nearest_node = node
+
+        if node[0] == self.rect.x or node[1] == self.rect.y:
+            if distance(pacman_rect, (self.rect.x, self.rect.y)) < min_dist and \
+            not self.collide_wall(self.postion_node(node)):
+                nearest_node = pacman_rect
+
+        return nearest_node
 
 
-    def refresh_last_node(self, node_list): #refresh the last node position
+    def nearest_node3(self, pacman_rect, node_list):
+        nearest_node = node_list[0]
+        min_dist = WIDTH + HEIGHT
+
+        for node in node_list:
+            if node != self.last_node:
+                if [node[0], node[1]] != [self.rect.x, self.rect.y]:
+                    if node[0] == self.rect.x or node[1] == self.rect.y:
+                        if not self.collide_wall(self.postion_node(node)):
+                            distanceGhostToNode = distance([self.rect.x, self.rect.y], node)
+                            distanceNodeToPacman = distance(
+                                node,
+                                (pacman_rect[0] - block_size,
+                                 pacman_rect[1] - block_size)
+                                )
+                            totalDistance = distanceGhostToNode + distanceNodeToPacman
+                            if totalDistance < min_dist:
+                                min_dist = totalDistance
+                                nearest_node = node
+
+        if node[0] == self.rect.x or node[1] == self.rect.y:
+            if distance(pacman_rect, (self.rect.x, self.rect.y)) < min_dist and \
+            not self.collide_wall(self.postion_node(node)):
+                nearest_node = pacman_rect
+
+        return nearest_node
+
+
+    def nearest_node4(self, pacman_rect, node_list):
+        nearest_node = node_list[0]
+        min_dist = WIDTH + HEIGHT
+
+        for node in node_list:
+            if node != self.last_node:
+                if [node[0], node[1]] != [self.rect.x, self.rect.y]:
+                    if node[0] == self.rect.x or node[1] == self.rect.y:
+                        if not self.collide_wall(self.postion_node(node)):
+                            totalDistance = rand(2, 10)
+                            if totalDistance < min_dist:
+                                min_dist = totalDistance
+                                nearest_node = node
+
+        if node[0] == self.rect.x or node[1] == self.rect.y:
+            if distance(pacman_rect, (self.rect.x, self.rect.y)) < min_dist and \
+            not self.collide_wall(self.postion_node(node)):
+                nearest_node = pacman_rect
+
+        return nearest_node
+
+
+    #give the ghost the ability to move
+    def move(self):
+        if self.in_home == True:
+            self.go_out_home()
+        else:
+            if self.type == 1:
+                end_pos = self.nearest_node1([pyman.rect[0], pyman.rect[1]], node_list)
+            elif self.type == 2:
+                end_pos = self.nearest_node2([pyman.rect[0], pyman.rect[1]], node_list)
+            elif self.type == 3:
+                end_pos = self.nearest_node3([pyman.rect[0], pyman.rect[1]], node_list)
+            elif self.type == 4:
+                end_pos = self.nearest_node4([pyman.rect[0], pyman.rect[1]], node_list)
+
+            if self.rect.x > end_pos[0]:
+                self.rect.x -= self.speed
+            if self.rect.x < end_pos[0]:
+                self.rect.x += self.speed
+
+            if self.rect.y > end_pos[1]:
+                self.rect.y -= self.speed
+            if self.rect.y < end_pos[1]:
+                self.rect.y += self.speed
+
+
+    def go_out_home(self):
+        if not (self.rect.x == block_size * 13 or \
+                self.rect.x == block_size * 14):
+            if self.rect.x < block_size * 13:
+                self.rect.x += self.speed
+            else:
+                self.rect.x -= self.speed
+        else:
+            if self.rect.y > block_size * 11:
+                self.rect.y -= self.speed
+            else:
+                self.in_home = False
+
+    #refresh the last node position
+    def refresh_last_node(self, node_list):
         for node in node_list:
             if node == (self.rect.x, self.rect.y):
                 self.last_node = node
                 return None
-
 
     #detect if there is a wall in front of the ghost
     def collide_wall(self, direction):
@@ -223,7 +330,6 @@ class Ghost(pygame.sprite.Sprite):
         else:
                 return False
 
-
     #the position of the node in reference to the PyMan one
     def postion_node(self, node):
         if node[0] == self.rect.x:
@@ -237,22 +343,43 @@ class Ghost(pygame.sprite.Sprite):
             else:
                 return "left"
 
-
-def distance(a, b): #function that find the distance between point a and b
+#function that find the distance between point a and b
+def distance(a, b):
     delta_x = a[0] - b[0]
     delta_y = a[1] - b[1]
     return sqrt(delta_x ** 2 + delta_y ** 2)
 
-#giving ghosts a shape!
+#giving ghosts some shape!
 ghost_image = pygame.image.load("./image/ghost.png")
 ghost_image = pygame.transform.scale(ghost_image, (block_size,
                                                    block_size))
 
 #create Ghosts instance
-ghost1 = Ghost(ghost_image, block_size, HEIGHT - 2 * block_size, speed)
-ghost2 = Ghost(ghost_image, WIDTH - 2 * block_size, block_size, speed)
+ghost1 = Ghost(ghost_image,
+               block_size * 12 - block_size / 2,
+               block_size * 15 - block_size / 2,
+               speed,
+               1)
 
-ghost_list = [ghost1, ghost2]
+ghost2 = Ghost(ghost_image,
+               block_size * 15 + block_size / 2,
+               block_size * 15 - block_size / 2,
+               speed,
+               2)
+
+ghost3 = Ghost(ghost_image,
+               block_size * 12 - block_size / 2,
+               block_size * 14 - block_size / 2,
+               speed,
+               3)
+
+ghost4 = Ghost(ghost_image,
+               block_size * 15 + block_size / 2,
+               block_size * 14 - block_size / 2,
+               speed,
+               4)
+
+ghost_list = [ghost1, ghost2, ghost3, ghost4]
 ghost_group = pygame.sprite.Group(ghost_list)
 
 #acquiring map images
@@ -267,7 +394,6 @@ dict_map = {
     (0, 0, 255): ("./image/trasparente.png", False) # sponsor
 }
 
-
 #creating the map
 map = create_map(map_image, dict_map, block_size, WIDTH) #create the map
 wall_array = []
@@ -279,6 +405,7 @@ wall_group = pygame.sprite.Group(wall_array)
 wall_position = []
 for walls in wall_array:
     wall_position.append((walls.rect.x, walls.rect.y))
+
 
 dict_coin = {
     (255, 0, 0): ("./image/PixelMap.png", "big"),
@@ -301,7 +428,6 @@ big_coin_group = pygame.sprite.Group(big_coin_list)
 #creating a list of the node(crossings) of the map
 node_list = node_position(map_image, (0, 255, 0), block_size, WIDTH)
 # End of Game Values
-
 
 # Game loop
 game_ended = False
