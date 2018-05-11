@@ -46,6 +46,7 @@ class Pyman(pygame.sprite.Sprite):
         self.life = 3
         self.life_pos = life_pos
         self.score = 0
+        self.can_eat = False
 
     def touch_node(self):   #detect collision between PyMan and nodes
         if (self.rect.x, self.rect.y) in node_list:
@@ -80,9 +81,13 @@ class Pyman(pygame.sprite.Sprite):
         if self.rect.x > WIDTH:
             self.rect.x = -self.rect.width
 
-    def check_if_dead(self):
+    def check_if_touch(self):
         if pygame.sprite.spritecollide(self, ghost_group, False) != []:
-            self.restart()
+            if self.can_eat == True:
+                pygame.sprite.spritecollide(self, ghost_group, True)[0].restart()
+                self.score += 150
+            else:
+                self.restart()
 
     def restart(self):
         global ghost_group, game_over_image
@@ -96,13 +101,14 @@ class Pyman(pygame.sprite.Sprite):
                         (WIDTH / 2 - game_over_rect.width / 2,
                          HEIGHT / 2 - game_over_rect.height / 2))
         else:
-            time.sleep(1)
+            time.sleep(0.5)
             self.rect.x = self.start_x
             self.rect.y = self.start_y
             for ghosts in ghost_group:
                 ghosts.rect.x =  ghosts.start_x
                 ghosts.rect.y = ghosts.start_y
                 ghosts.in_home = True
+            time.sleep(0.5)
 
     def life_display(self):
         for life in range(self.life):
@@ -116,6 +122,7 @@ class Pyman(pygame.sprite.Sprite):
             self.score += 10
 
         if pygame.sprite.spritecollide(self, big_coin_group, True) != []:
+            # self.can_eat = True
             self.score += 50
 
         pygame.font.init()
@@ -150,7 +157,7 @@ game_over_image = pygame.transform.scale(game_over_image,
 class Ghost(pygame.sprite.Sprite):
 
     """The class for the 4 ghosts"""
-    def __init__(self, image, x, y, speed):
+    def __init__(self, image, x, y, speed, type):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
         self.rect = self.image.get_rect()
@@ -164,7 +171,7 @@ class Ghost(pygame.sprite.Sprite):
         self.type = type
 
     #finding the nearest node to the ghost
-    def nearest_node(self, pacman_rect, node_list):
+    def nearest_node1(self, pacman_rect, node_list):
         nearest_node = node_list[0]
         min_dist = WIDTH + HEIGHT
 
@@ -245,7 +252,7 @@ class Ghost(pygame.sprite.Sprite):
         return nearest_node
 
 
-    def nearest_node4(self, pacman_rect, node_list):
+    """def nearest_node4(self, pacman_rect, node_list):
         nearest_node = node_list[0]
         min_dist = WIDTH + HEIGHT
 
@@ -264,22 +271,41 @@ class Ghost(pygame.sprite.Sprite):
             not self.collide_wall(self.postion_node(node)):
                 nearest_node = pacman_rect
 
-        return nearest_node
+        return nearest_node"""
 
+    """def escape(self, pacman_rect, node_list):
+        farthest_node = node_list[0]
+        max_dist = -1
+
+        for node in node_list:
+            if node != self.last_node:
+                if [node[0], node[1]] != [self.rect.x, self.rect.y]:
+                    if node[0] == self.rect.x or node[1] == self.rect.y:
+                        if not self.collide_wall(self.postion_node(node)):
+                            distanceNodeToPacman = distance(node, pacman_rect)
+                            if distanceNodeToPacman > max_dist:
+                                max_dist = distanceNodeToPacman
+                                farthest_node = node
+
+
+        return farthest_node"""
 
     #give the ghost the ability to move
     def move(self):
         if self.in_home == True:
             self.go_out_home()
         else:
-            if self.type == 1:
-                end_pos = self.nearest_node1([pyman.rect[0], pyman.rect[1]], node_list)
-            elif self.type == 2:
-                end_pos = self.nearest_node2([pyman.rect[0], pyman.rect[1]], node_list)
-            elif self.type == 3:
-                end_pos = self.nearest_node3([pyman.rect[0], pyman.rect[1]], node_list)
-            elif self.type == 4:
-                end_pos = self.nearest_node4([pyman.rect[0], pyman.rect[1]], node_list)
+            if pyman.can_eat == False:
+                if self.type == 1:
+                    end_pos = self.nearest_node1([pyman.rect[0], pyman.rect[1]], node_list)
+                elif self.type == 2:
+                    end_pos = self.nearest_node2([pyman.rect[0], pyman.rect[1]], node_list)
+                elif self.type == 3:
+                    end_pos = self.nearest_node3([pyman.rect[0], pyman.rect[1]], node_list)
+                elif self.type == 4:
+                    end_pos = self.nearest_node4([pyman.rect[0], pyman.rect[1]], node_list)
+            else:
+                end_pos = self.escape([pyman.rect[0], pyman.rect[1]], node_list)
 
             if self.rect.x > end_pos[0]:
                 self.rect.x -= self.speed
@@ -343,6 +369,13 @@ class Ghost(pygame.sprite.Sprite):
             else:
                 return "left"
 
+    """
+    def restart(self):
+        self.rect.x = self.start_x
+        self.rect.y = self.start_y
+        self.in_home = True
+        """
+
 #function that find the distance between point a and b
 def distance(a, b):
     delta_x = a[0] - b[0]
@@ -379,7 +412,7 @@ ghost4 = Ghost(ghost_image,
                speed,
                4)
 
-ghost_list = [ghost1, ghost2, ghost3, ghost4]
+ghost_list = [ghost1, ghost2, ghost3]
 ghost_group = pygame.sprite.Group(ghost_list)
 
 #acquiring map images
@@ -409,12 +442,14 @@ for walls in wall_array:
 
 dict_coin = {
     (255, 0, 0): ("./image/PixelMap.png", "big"),
-    (255, 255, 0): ("./image/PixelMap.png", "small")
+    (255, 255, 0): ("./image/pizza2.png", "small")
 }
+
 coinmap_image = "./image/CoinMap.png"
-coins_map =create_coins(coinmap_image, dict_coin, block_size, WIDTH)
+coins_map = create_coins(coinmap_image, dict_coin, block_size, WIDTH)
 small_coin_list = []
 big_coin_list = []
+
 for coin in coins_map:
     if coin.type == "small":
         small_coin_list.append(coin)
@@ -476,11 +511,12 @@ while not game_ended:
 
     # Display update
     draw_map(map, map_bg, window)
-    place_coins(coins_map, window)
+    place_coins(big_coin_group, window)
+    place_coins(small_coin_group, window)
     pyman_group.draw(window)
     ghost_group.draw(window)
 
-    pyman.check_if_dead()
+    pyman.check_if_touch()
     pyman.life_display()
     pyman.get_points(window)
 

@@ -42,9 +42,9 @@ def create_coins(map_image, dictionary, block_size, width):
     return map
 
 
-def place_coins(coinmap_array, window):
-    for coin in coinmap_array:
-        coin.draw( window, coin.rect.x, coin.rect.y)
+def place_coins(coinmap_group, window):
+    for coin in coinmap_group:
+        coin.draw(window, coin.rect.x, coin.rect.y)
 
 class Coin(pygame.sprite.Sprite):
     """The class of the various 'coins'"""
