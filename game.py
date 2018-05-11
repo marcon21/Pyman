@@ -98,6 +98,7 @@ class Pyman(pygame.sprite.Sprite):
             for ghosts in ghost_group:
                 ghosts.rect.x =  ghosts.start_x
                 ghosts.rect.y = ghosts.start_y
+                ghosts.in_home = True
 
     def life_display(self):
         for life in range(self.life):
@@ -117,8 +118,9 @@ life_image = pygame.transform.scale(life_image,
                                     block_size + block_size // 2))
 
 pyman = Pyman(pyman_image, #create PyMan instance
-              block_size * 1,
-              block_size * 1, speed,
+              block_size * 13,
+              block_size * 17,
+              speed,
               [0, HEIGHT / 2 - 5 * block_size],
               life_image)
 
@@ -143,10 +145,11 @@ class Ghost(pygame.sprite.Sprite):
         self.rect.y = self.start_y
         self.speed = speed
         self.last_node = (x, y)
+        self.in_home = True
 
     #finding the nearest node to the ghost
     def nearest_node(self, pacman_rect, node_list):
-        nearest_node = None
+        nearest_node = node_list[1]
         min_dist = WIDTH + HEIGHT
 
         for node in node_list:
@@ -170,16 +173,33 @@ class Ghost(pygame.sprite.Sprite):
 
     #give the ghost the ability to move
     def move(self):
-        end_pos = self.nearest_node([pyman.rect[0], pyman.rect[1]], node_list)
-        if self.rect.x > end_pos[0]:
-            self.rect.x -= self.speed
-        if self.rect.x < end_pos[0]:
-            self.rect.x += self.speed
+        if self.in_home == True:
+            self.go_out_home()
+        else:
+            end_pos = self.nearest_node([pyman.rect[0], pyman.rect[1]], node_list)
+            if self.rect.x > end_pos[0]:
+                self.rect.x -= self.speed
+            if self.rect.x < end_pos[0]:
+                self.rect.x += self.speed
 
-        if self.rect.y > end_pos[1]:
-            self.rect.y -= self.speed
-        if self.rect.y < end_pos[1]:
-            self.rect.y += self.speed
+            if self.rect.y > end_pos[1]:
+                self.rect.y -= self.speed
+            if self.rect.y < end_pos[1]:
+                self.rect.y += self.speed
+
+
+    def go_out_home(self):
+        if not (self.rect.x == block_size * 13 or \
+                self.rect.x == block_size * 14):
+            if self.rect.x < block_size * 13:
+                self.rect.x += self.speed
+            else:
+                self.rect.x -= self.speed
+        else:
+            if self.rect.y > block_size * 11:
+                self.rect.y -= self.speed
+            else:
+                self.in_home = False
 
     #refresh the last node position
     def refresh_last_node(self, node_list):
@@ -231,10 +251,27 @@ ghost_image = pygame.transform.scale(ghost_image, (block_size,
                                                    block_size))
 
 #create Ghosts instance
-ghost1 = Ghost(ghost_image, block_size, HEIGHT - 2 * block_size, speed)
-ghost2 = Ghost(ghost_image, WIDTH - 2 * block_size, block_size, speed)
+ghost1 = Ghost(ghost_image,
+               block_size * 12 - block_size / 2,
+               block_size * 15 - block_size / 2,
+               speed)
 
-ghost_list = [ghost1, ghost2]
+ghost2 = Ghost(ghost_image,
+               block_size * 15 + block_size / 2,
+               block_size * 15 - block_size / 2,
+               speed)
+
+ghost3 = Ghost(ghost_image,
+               block_size * 12 - block_size / 2,
+               block_size * 14 - block_size / 2,
+               speed)
+
+ghost4 = Ghost(ghost_image,
+               block_size * 15 + block_size / 2,
+               block_size * 14 - block_size / 2,
+               speed)
+
+ghost_list = [ghost1, ghost2, ghost3, ghost4]
 ghost_group = pygame.sprite.Group(ghost_list)
 
 #acquiring map images
@@ -265,7 +302,7 @@ for walls in wall_array:
 node_list = node_position(map_image, (0, 255, 0), block_size, WIDTH)
 # End of Game Values
 
-
+print( WIDTH / 2 - ghost1.rect.width / 2)
 # Game loop
 game_ended = False
 while not game_ended:
