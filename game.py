@@ -3,6 +3,7 @@ import time
 from pygame.locals import *
 from generate_map import create_map, draw_map
 from node_position import node_position
+from coins import create_coins, place_coins
 from math import sqrt
 
 pygame.init()
@@ -42,6 +43,7 @@ class Pyman(pygame.sprite.Sprite):
         self.rect_life = self.life_image.get_rect()
         self.life = 3
         self.life_pos = life_pos
+        self.score = 0
 
     def touch_node(self):   #detect collision between PyMan and nodes
         if (self.rect.x, self.rect.y) in node_list:
@@ -70,17 +72,17 @@ class Pyman(pygame.sprite.Sprite):
         if self.direction == "left":
             self.rect.x += self.speed * -1
 
-    def teleport(self):     #allow PyMan to teleport when he's outside the map
+    def teleport(self): #allow PyMan to teleport when he's outside the map
         if self.rect.x < -self.rect.width:
             self.rect.x = WIDTH
         if self.rect.x > WIDTH:
             self.rect.x = -self.rect.width
 
-    def check_if_dead(self):
+    def check_if_dead(self):  #check if PyMan is being touched by any Ghost
         if pygame.sprite.spritecollide(self, ghost_group, False) != []:
             self.restart()
 
-    def restart(self):
+    def restart(self): #restart the game after PyMan has been catched
         global ghost_group, game_over_image
         self.life -= 1
         if self.life <= 0:
@@ -99,14 +101,19 @@ class Pyman(pygame.sprite.Sprite):
                 ghosts.rect.x =  ghosts.start_x
                 ghosts.rect.y = ghosts.start_y
 
-    def life_display(self):
+    def life_display(self): #display the current life
         for life in range(self.life):
             window.blit(self.life_image,
                         (self.life_pos[0] + self.rect_life.width * life + 1,
                         self.life_pos[1]))
 
 
+    def get_points(self):
+        if pygame.sprite.spritecollide(self, coins_group, True) != []:
+            self.score += 10
+            print(self.score)
 
+#giving PyMan a shape!
 pyman_image = pygame.image.load("./image/pyman.png")
 pyman_image = pygame.transform.scale(pyman_image, (block_size - 2,
                                                    block_size - 2))
@@ -130,8 +137,8 @@ game_over_image = pygame.image.load("./image/game_over.png")
 game_over_image = pygame.transform.scale(game_over_image,
                                         (game_over_width,
                                         int(game_over_width / 1.7777)))
-class Ghost(pygame.sprite.Sprite):
 
+class Ghost(pygame.sprite.Sprite):
     """The class for the 4 ghosts"""
     def __init__(self, image, x, y, speed):
         pygame.sprite.Sprite.__init__(self)
@@ -168,8 +175,8 @@ class Ghost(pygame.sprite.Sprite):
 
         return nearest_node
 
-    #give the ghost the ability to move
-    def move(self):
+
+    def move(self): #give the ghost the ability to move
         end_pos = self.nearest_node([pyman.rect[0], pyman.rect[1]], node_list)
         if self.rect.x > end_pos[0]:
             self.rect.x -= self.speed
@@ -181,12 +188,13 @@ class Ghost(pygame.sprite.Sprite):
         if self.rect.y < end_pos[1]:
             self.rect.y += self.speed
 
-    #refresh the last node position
-    def refresh_last_node(self, node_list):
+
+    def refresh_last_node(self, node_list): #refresh the last node position
         for node in node_list:
             if node == (self.rect.x, self.rect.y):
                 self.last_node = node
                 return None
+
 
     #detect if there is a wall in front of the ghost
     def collide_wall(self, direction):
@@ -206,6 +214,7 @@ class Ghost(pygame.sprite.Sprite):
         else:
                 return False
 
+
     #the position of the node in reference to the PyMan one
     def postion_node(self, node):
         if node[0] == self.rect.x:
@@ -219,13 +228,13 @@ class Ghost(pygame.sprite.Sprite):
             else:
                 return "left"
 
-#function that find the distance between point a and b
-def distance(a, b):
+
+def distance(a, b): #function that find the distance between point a and b
     delta_x = a[0] - b[0]
     delta_y = a[1] - b[1]
     return sqrt(delta_x ** 2 + delta_y ** 2)
 
-#giving ghosts some shape!
+#giving ghosts a shape!
 ghost_image = pygame.image.load("./image/ghost.png")
 ghost_image = pygame.transform.scale(ghost_image, (block_size,
                                                    block_size))
@@ -249,6 +258,7 @@ dict_map = {
     (0, 0, 255): ("./image/trasparente.png", False) # sponsor
 }
 
+
 #creating the map
 map = create_map(map_image, dict_map, block_size, WIDTH) #create the map
 wall_array = []
@@ -260,6 +270,16 @@ wall_group = pygame.sprite.Group(wall_array)
 wall_position = []
 for walls in wall_array:
     wall_position.append((walls.rect.x, walls.rect.y))
+
+dict_coin = {
+    (255, 0, 0): "./image/PixelMap.png",
+    (255, 255, 0): "./image/PixelMap.png"
+}
+coinmap_image = "./image/CoinMap.png"
+coins_map =create_coins(coinmap_image, dict_coin, block_size, WIDTH)
+coins_group = pygame.sprite.Group(coins_map)
+
+
 
 #creating a list of the node(crossings) of the map
 node_list = node_position(map_image, (0, 255, 0), block_size, WIDTH)
@@ -313,11 +333,13 @@ while not game_ended:
 
     # Display update
     draw_map(map, map_bg, window)
+    place_coins(coins_map, window)
     pyman_group.draw(window)
     ghost_group.draw(window)
 
     pyman.check_if_dead()
     pyman.life_display()
+    pyman.get_points()
 
     pygame.display.update()
     clock.tick(FPS)
