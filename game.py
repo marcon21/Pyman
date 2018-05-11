@@ -108,10 +108,19 @@ class Pyman(pygame.sprite.Sprite):
                         self.life_pos[1]))
 
 
-    def get_points(self):
-        if pygame.sprite.spritecollide(self, coins_group, True) != []:
+    def get_points(self, screen): #calculate points for PyMan
+        if pygame.sprite.spritecollide(self, small_coin_group, True) != []:
             self.score += 10
             print(self.score)
+
+        if pygame.sprite.spritecollide(self, big_coin_group, True) != []:
+            self.score += 50
+            print(self.score)
+
+        pygame.font.init()
+        myfont = pygame.font.SysFont('Comic Sans MS', 30)
+        textsurface = myfont.render(str(self.score), False, (255, 255, 0))
+        screen.blit(textsurface,(20,20))
 
 #giving PyMan a shape!
 pyman_image = pygame.image.load("./image/pyman.png")
@@ -153,7 +162,7 @@ class Ghost(pygame.sprite.Sprite):
 
     #finding the nearest node to the ghost
     def nearest_node(self, pacman_rect, node_list):
-        nearest_node = None
+        nearest_node = node_list[0]
         min_dist = WIDTH + HEIGHT
 
         for node in node_list:
@@ -272,13 +281,21 @@ for walls in wall_array:
     wall_position.append((walls.rect.x, walls.rect.y))
 
 dict_coin = {
-    (255, 0, 0): "./image/PixelMap.png",
-    (255, 255, 0): "./image/PixelMap.png"
+    (255, 0, 0): ("./image/PixelMap.png", "big"),
+    (255, 255, 0): ("./image/PixelMap.png", "small")
 }
 coinmap_image = "./image/CoinMap.png"
 coins_map =create_coins(coinmap_image, dict_coin, block_size, WIDTH)
-coins_group = pygame.sprite.Group(coins_map)
+small_coin_list = []
+big_coin_list = []
+for coin in coins_map:
+    if coin.type == "small":
+        small_coin_list.append(coin)
+    elif coin.type == "big":
+        big_coin_list.append(coin)
 
+small_coin_group = pygame.sprite.Group(small_coin_list)
+big_coin_group = pygame.sprite.Group(big_coin_list)
 
 
 #creating a list of the node(crossings) of the map
@@ -339,7 +356,7 @@ while not game_ended:
 
     pyman.check_if_dead()
     pyman.life_display()
-    pyman.get_points()
+    pyman.get_points(window)
 
     pygame.display.update()
     clock.tick(FPS)

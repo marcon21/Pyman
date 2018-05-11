@@ -19,18 +19,18 @@ def create_coins(map_image, dictionary, block_size, width):
         if element == (255, 255, 0) or element == (255, 0, 0):
             if element == (255, 255, 0):
                 surface_sprite = pygame.transform.scale(
-                    pygame.image.load(dictionary[element]),
+                    pygame.image.load(dictionary[element][0]),
                     (block_size, block_size))
 
-                coin = Coin(surface_sprite, x, y)
+                coin = Coin(surface_sprite, x, y, dictionary[element][1])
 
 
             elif element == (255, 0, 0):
                 surface_sprite = pygame.transform.scale(
-                    pygame.image.load(dictionary[element]),
+                    pygame.image.load(dictionary[element][0]),
                     (block_size, block_size))
 
-                coin = Bigcoin(surface_sprite, x, y)
+                coin = Bigcoin(surface_sprite, x, y, dictionary[element][1])
 
 
             map.append(coin)
@@ -49,13 +49,13 @@ def place_coins(coinmap_array, window):
 class Coin(pygame.sprite.Sprite):
     """The class of the various 'coins'"""
 
-    def __init__(self, image, x, y):
+    def __init__(self, image, x, y, type):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
+        self.type = type
 
     def draw(self, screen, x, y):
         screen.blit(self.image, (x, y))
@@ -64,13 +64,13 @@ class Coin(pygame.sprite.Sprite):
 class Bigcoin(pygame.sprite.Sprite):
     """The class of the big 'coins'"""
 
-    def __init__(self, image, x, y):
+    def __init__(self, image, x, y, type):
         pygame.sprite.Sprite.__init__(self)
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
+        self.type = type
 
     def draw(self, screen, x, y):
         screen.blit(self.image, (x, y))
