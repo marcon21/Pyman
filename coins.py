@@ -15,6 +15,7 @@ def create_coins(map_image, dictionary, block_size, width):
     x = 0
     y = 0
 
+
     for element in coinmap_raw: #the image of the block
         if element == (255, 255, 0) or element == (255, 0, 0):
             if element == (255, 255, 0):
@@ -23,7 +24,6 @@ def create_coins(map_image, dictionary, block_size, width):
                     (block_size, block_size))
 
                 coin = Coin(surface_sprite, x, y, dictionary[element][1])
-
 
             elif element == (255, 0, 0):
                 surface_sprite = pygame.transform.scale(

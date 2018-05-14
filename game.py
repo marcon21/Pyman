@@ -104,6 +104,7 @@ class Pyman(pygame.sprite.Sprite):
             time.sleep(0.5)
             self.rect.x = self.start_x
             self.rect.y = self.start_y
+            self.direction = ""
             for ghosts in ghost_group:
                 ghosts.rect.x =  ghosts.start_x
                 ghosts.rect.y = ghosts.start_y
@@ -111,11 +112,13 @@ class Pyman(pygame.sprite.Sprite):
             time.sleep(0.5)
 
     def life_display(self):
+        c = 0
         for life in range(self.life):
-            window.blit(self.life_image,
-                        (self.life_pos[0] + self.rect_life.width * life + 1,
-                        self.life_pos[1]))
-
+            if c < 3:
+                window.blit(self.life_image,
+                            (self.life_pos[0] + self.rect_life.width * life + 1,
+                            self.life_pos[1]))
+            c += 1
 
     def get_points(self, screen): #calculate points for PyMan
         if pygame.sprite.spritecollide(self, small_coin_group, True) != []:
@@ -123,12 +126,13 @@ class Pyman(pygame.sprite.Sprite):
 
         if pygame.sprite.spritecollide(self, big_coin_group, True) != []:
             # self.can_eat = True
-            self.score += 50
+            self.score += 150
 
         pygame.font.init()
-        myfont = pygame.font.SysFont('Comic Sans MS', 30)
+        myfont = pygame.font.SysFont('Comic Sans MS', 40)
         textsurface = myfont.render(str(self.score), False, (255, 255, 0))
-        screen.blit(textsurface,(20,20))
+        screen.blit(textsurface,(32,
+                                 self.life_pos[1] + 220))
 
 pyman_image = pygame.image.load("./image/pyman.png")
 pyman_image = pygame.transform.scale(pyman_image, (block_size - 2,
@@ -154,8 +158,8 @@ game_over_image = pygame.image.load("./image/game_over.png")
 game_over_image = pygame.transform.scale(game_over_image,
                                         (game_over_width,
                                         int(game_over_width / 1.7777)))
-class Ghost(pygame.sprite.Sprite):
 
+class Ghost(pygame.sprite.Sprite):
     """The class for the 4 ghosts"""
     def __init__(self, image, x, y, speed, type):
         pygame.sprite.Sprite.__init__(self)
@@ -193,8 +197,6 @@ class Ghost(pygame.sprite.Sprite):
                 nearest_node = pacman_rect
 
         return nearest_node
-
-
 
     def nearest_node2(self, pacman_rect, node_list):
         nearest_node = node_list[0]
@@ -382,31 +384,51 @@ def distance(a, b):
     delta_y = a[1] - b[1]
     return sqrt(delta_x ** 2 + delta_y ** 2)
 
+logo1 = pygame.image.load("./image/CoderDojoVR.png")
+logo1 = pygame.transform.scale(logo1, (block_size * 3, block_size * 3))
+logo1_rect = logo1.get_rect()
+
+logo2 = pygame.image.load("./image/Marconi.png")
+logo2 = pygame.transform.scale(logo2, (block_size * 5, int(block_size * 5 / 2.725)))
+logo2_rect = logo1.get_rect()
+
+def disply_logo(image, rect, x, y):
+    window.blit(image,
+                (x,
+                y))
+
+
 #giving ghosts some shape!
-ghost_image = pygame.image.load("./image/ghost.png")
-ghost_image = pygame.transform.scale(ghost_image, (block_size,
+ghost_image1 = pygame.image.load("./image/arancio.png")
+ghost_image1 = pygame.transform.scale(ghost_image1, (block_size,
                                                    block_size))
 
+ghost_image2 = pygame.image.load("./image/azzurro.png")
+ghost_image2 = pygame.transform.scale(ghost_image2, (block_size,
+                                                   block_size))
+ghost_image3 = pygame.image.load("./image/rosso.png")
+ghost_image3 = pygame.transform.scale(ghost_image3, (block_size,
+                                                   block_size))
 #create Ghosts instance
-ghost1 = Ghost(ghost_image,
+ghost1 = Ghost(ghost_image1,
                block_size * 12 - block_size / 2,
                block_size * 15 - block_size / 2,
                speed,
                1)
 
-ghost2 = Ghost(ghost_image,
+ghost2 = Ghost(ghost_image2,
                block_size * 15 + block_size / 2,
                block_size * 15 - block_size / 2,
                speed,
                2)
 
-ghost3 = Ghost(ghost_image,
+ghost3 = Ghost(ghost_image3,
                block_size * 12 - block_size / 2,
                block_size * 14 - block_size / 2,
                speed,
                3)
 
-ghost4 = Ghost(ghost_image,
+ghost4 = Ghost(ghost_image1,
                block_size * 15 + block_size / 2,
                block_size * 14 - block_size / 2,
                speed,
@@ -441,8 +463,8 @@ for walls in wall_array:
 
 
 dict_coin = {
-    (255, 0, 0): ("./image/PixelMap.png", "big"),
-    (255, 255, 0): ("./image/pizza2.png", "small")
+    (255, 0, 0): ("./image/BigJim.png", "big"),
+    (255, 255, 0): ("./image/SmallJim.png", "small")
 }
 
 coinmap_image = "./image/CoinMap.png"
@@ -463,7 +485,7 @@ big_coin_group = pygame.sprite.Group(big_coin_list)
 #creating a list of the node(crossings) of the map
 node_list = node_position(map_image, (0, 255, 0), block_size, WIDTH)
 # End of Game Values
-
+win = False
 # Game loop
 game_ended = False
 while not game_ended:
@@ -488,6 +510,20 @@ while not game_ended:
         pyman.new_direction = "left"
     if keys_pressed[K_d] or keys_pressed[K_RIGHT]:
         pyman.new_direction = "right"
+    if keys_pressed[K_l]:
+        pyman.life += 100
+
+    """
+    if keys_pressed[K_r]:
+        pyman.life = 4
+        pyman.restart()
+        pyman.score = 0
+        pyman.direction = ""
+        for ghosts in ghost_group:
+            ghosts.in_home = True
+        small_coin_group = pygame.sprite.Group(small_coin_list)
+        big_coin_group = pygame.sprite.Group(big_coin_list)
+        """
 
     #allow PyMan to move only if it's on a node or the movement is opposite
     if not pyman.wall_collide():
@@ -508,6 +544,9 @@ while not game_ended:
 
     pyman.move()
 
+    if big_coin_group == [] and small_coin_group == []:
+        game_ended = True
+        win = True
 
     # Display update
     draw_map(map, map_bg, window)
@@ -515,6 +554,8 @@ while not game_ended:
     place_coins(small_coin_group, window)
     pyman_group.draw(window)
     ghost_group.draw(window)
+    disply_logo(logo1, logo1_rect, block_size * 24, block_size * 10)
+    disply_logo(logo2, logo2_rect, block_size * 23, block_size * 16 + 16)
 
     pyman.check_if_touch()
     pyman.life_display()
@@ -523,6 +564,12 @@ while not game_ended:
     pygame.display.update()
     clock.tick(FPS)
 
+win_image = pygame.image.load("./image/win.png")
+win_image = pygame.transform.scale(win_image, (WIDTH, int(WIDTH / 1.4)))
+
+if win:
+    window.blit()
+    time.sleep(5)
 
 pygame.quit()
 exit(0)
