@@ -89,7 +89,7 @@ class Pyman(pygame.sprite.Sprite):
             else:
                 self.restart()
 
-    def restart(self):
+    def restart(self): #restart the game
         global ghost_group, game_over_image
         self.life -= 1
         if self.life <= 0:
@@ -111,7 +111,7 @@ class Pyman(pygame.sprite.Sprite):
                 ghosts.in_home = True
             time.sleep(0.5)
 
-    def life_display(self):
+    def life_display(self): #display the ammount of life
         c = 0
         for life in range(self.life):
             if c < 3:
@@ -134,6 +134,7 @@ class Pyman(pygame.sprite.Sprite):
         screen.blit(textsurface,(32,
                                  self.life_pos[1] + 220))
 
+#give PyMan a shape
 pyman_image = pygame.image.load("./image/pyman.png")
 pyman_image = pygame.transform.scale(pyman_image, (block_size - 2,
                                                    block_size - 2))
@@ -174,7 +175,7 @@ class Ghost(pygame.sprite.Sprite):
         self.in_home = True
         self.type = type
 
-    #finding the nearest node to the ghost
+    #finding the nearest node to the ghost(a function for each ghost)
     def nearest_node1(self, pacman_rect, node_list):
         nearest_node = node_list[0]
         min_dist = WIDTH + HEIGHT
@@ -320,7 +321,7 @@ class Ghost(pygame.sprite.Sprite):
                 self.rect.y += self.speed
 
 
-    def go_out_home(self):
+    def go_out_home(self): #allow the ghost to get out pf the little house
         if not (self.rect.x == block_size * 13 or \
                 self.rect.x == block_size * 14):
             if self.rect.x < block_size * 13:
@@ -392,7 +393,7 @@ logo2 = pygame.image.load("./image/Marconi.png")
 logo2 = pygame.transform.scale(logo2, (block_size * 5, int(block_size * 5 / 2.725)))
 logo2_rect = logo1.get_rect()
 
-def disply_logo(image, rect, x, y):
+def disply_logo(image, rect, x, y): #display on screen the logo
     window.blit(image,
                 (x,
                 y))
