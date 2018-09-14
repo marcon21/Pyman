@@ -2,8 +2,6 @@ import pygame, sys, random, math
 from pygame.locals import *
 from PIL import Image
 
-
-
 def node_position(map, color, block_size, WIDTH):
     """Algorithm that find the position of each node in a given map
     map = node map

@@ -15,7 +15,6 @@ def create_coins(map_image, dictionary, block_size, width):
     x = 0
     y = 0
 
-
     for element in coinmap_raw: #the image of the block
         if element == (255, 255, 0) or element == (255, 0, 0):
             if element == (255, 255, 0):
@@ -31,7 +30,6 @@ def create_coins(map_image, dictionary, block_size, width):
                     (block_size, block_size))
 
                 coin = Bigcoin(surface_sprite, x, y, dictionary[element][1])
-
 
             map.append(coin)
         x += block_size

@@ -4,7 +4,10 @@ import random
 from PIL import Image
 
 def create_map(map_image, dictionary, block_size, width):
-    """Function that, given a pixeled image of a map, a dictionary with various color for the relative blocks, their image and other information, the size of the block and the width of the monitor return a map the dimension of the map_image moltiplied by the block_size
+    """Function that, given a pixeled image of a map, a dictionary with various
+    color for the relative blocks, their image and other information, the size
+    of the block and the width of the monitor return a map the dimension of the
+    map_image moltiplied by the block_size
     """
     image_map = Image.open(map_image)
 
