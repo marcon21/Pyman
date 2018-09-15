@@ -30,9 +30,10 @@ non_touching_position = (32, 32)
 class Pyman(pygame.sprite.Sprite):
     """The class of the main character"""
 
-    def __init__(self, image, x, y, speed, life_pos, life_image):
+    def __init__(self, images, x, y, speed, life_pos, life_image):
         pygame.sprite.Sprite.__init__(self)
-        self.image = image
+        self.images = images
+        self.image = self.images[0]
         self.rect = self.image.get_rect()
         self.start_x = x
         self.start_y = y
@@ -68,12 +69,16 @@ class Pyman(pygame.sprite.Sprite):
         self.teleport()
         if self.direction == "up":
             self.rect.y += self.speed * -1
+            self.image = self.images[2]
         if self.direction == "down":
             self.rect.y += self.speed * 1
+            self.image = self.images[3]
         if self.direction == "right":
             self.rect.x += self.speed * 1
+            self.image = self.images[0]
         if self.direction == "left":
             self.rect.x += self.speed * -1
+            self.image = self.images[1]
 
     def teleport(self):     #allow PyMan to teleport when he's outside the map
         if self.rect.x < -self.rect.width:
@@ -139,8 +144,17 @@ class Pyman(pygame.sprite.Sprite):
                                  self.life_pos[1] + 220))
 
 #give PyMan a shape
-pyman_image = pygame.image.load("./image/pyman.png")
-pyman_image = pygame.transform.scale(pyman_image, (block_size - 2,
+pyman_image_r = pygame.image.load("./image/pyman_r.png")
+pyman_image_r = pygame.transform.scale(pyman_image_r, (block_size - 2,
+                                                   block_size - 2))
+pyman_image_l = pygame.image.load("./image/pyman_l.png")
+pyman_image_l = pygame.transform.scale(pyman_image_l, (block_size - 2,
+                                                   block_size - 2))
+pyman_image_d = pygame.image.load("./image/pyman_d.png")
+pyman_image_d = pygame.transform.scale(pyman_image_d, (block_size - 2,
+                                                   block_size - 2))
+pyman_image_u = pygame.image.load("./image/pyman_u.png")
+pyman_image_u = pygame.transform.scale(pyman_image_u, (block_size - 2,
                                                    block_size - 2))
 
 life_image = pygame.image.load("./image/life.png")
@@ -148,7 +162,9 @@ life_image = pygame.transform.scale(life_image,
                                     (block_size + block_size // 2,
                                     block_size + block_size // 2))
 
-pyman = Pyman(pyman_image, #create PyMan instance
+pyman_images = [pyman_image_r, pyman_image_l, pyman_image_u, pyman_image_d]
+
+pyman = Pyman(pyman_images, #create PyMan instance
               block_size * 13,
               block_size * 17,
               speed,
@@ -171,9 +187,10 @@ game_win_image = pygame.transform.scale(game_win_image,
                                         int(game_win_width / 1.7777)))
 class Ghost(pygame.sprite.Sprite):
     """The class for the 4 ghosts"""
-    def __init__(self, image, x, y, speed):
+    def __init__(self, images, x, y, speed):
         pygame.sprite.Sprite.__init__(self)
-        self.image = image
+        self.images = images
+        self.image = self.images[0]
         self.rect = self.image.get_rect()
         self.start_x = x
         self.start_y = y
@@ -234,8 +251,10 @@ class Ghost(pygame.sprite.Sprite):
 
             if self.direction == "right":
                 self.rect.x += self.speed
+                self.image = self.images[0]
             if self.direction == "left":
                 self.rect.x -= self.speed
+                self.image = self.images[1]
             if self.direction == "down":
                 self.rect.y += self.speed
             if self.direction == "up":
@@ -321,28 +340,43 @@ def distance(a, b):
     return sqrt(delta_x ** 2 + delta_y ** 2)
 
 #giving ghosts some shape!
-ghost_image1 = pygame.image.load("./image/arancio.png")
-ghost_image1 = pygame.transform.scale(ghost_image1, (block_size,
+ghost_image1_r = pygame.image.load("./image/arancio_r.png")
+ghost_image1_r = pygame.transform.scale(ghost_image1_r, (block_size,
+                                                   block_size))
+ghost_image1_l = pygame.image.load("./image/arancio_l.png")
+ghost_image1_l = pygame.transform.scale(ghost_image1_l, (block_size,
                                                    block_size))
 
-ghost_image2 = pygame.image.load("./image/azzurro.png")
-ghost_image2 = pygame.transform.scale(ghost_image2, (block_size,
+ghost_image2_r = pygame.image.load("./image/azzurro_r.png")
+ghost_image2_r = pygame.transform.scale(ghost_image2_r, (block_size,
                                                    block_size))
-ghost_image3 = pygame.image.load("./image/rosso.png")
-ghost_image3 = pygame.transform.scale(ghost_image3, (block_size,
+ghost_image2_l = pygame.image.load("./image/azzurro_l.png")
+ghost_image2_l = pygame.transform.scale(ghost_image2_l, (block_size,
                                                    block_size))
+
+ghost_image3_r = pygame.image.load("./image/rosso_r.png")
+ghost_image3_r = pygame.transform.scale(ghost_image3_r, (block_size,
+                                                   block_size))
+ghost_image3_l = pygame.image.load("./image/rosso_l.png")
+ghost_image3_l = pygame.transform.scale(ghost_image3_l, (block_size,
+                                                   block_size))
+
+ghost_images1 = [ghost_image1_r, ghost_image1_l]
+ghost_images2 = [ghost_image2_r, ghost_image2_l]
+ghost_images3 = [ghost_image3_r, ghost_image3_l]
+
 #create Ghosts instance
-ghost1 = Ghost(ghost_image1,
+ghost1 = Ghost(ghost_images1,
                block_size * 12 - block_size / 2,
                block_size * 15 - block_size / 2,
                speed)
 
-ghost2 = Ghost(ghost_image2,
+ghost2 = Ghost(ghost_images2,
                block_size * 15 + block_size / 2,
                block_size * 15 - block_size / 2,
                speed)
 
-ghost3 = Ghost(ghost_image3,
+ghost3 = Ghost(ghost_images3,
                block_size * 12 - block_size / 2,
                block_size * 14 - block_size / 2,
                speed)
