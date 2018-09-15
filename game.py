@@ -23,7 +23,7 @@ clock = pygame.time.Clock()
 # Game Values
 
 background_color = (150, 150, 150) # RGB value
-speed = 4
+speed = 2
 non_touching_position = (32, 32)
 
 
