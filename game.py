@@ -456,8 +456,7 @@ while not game_ended:
         pyman.new_direction = "left"
     if keys_pressed[K_d] or keys_pressed[K_RIGHT]:
         pyman.new_direction = "right"
-    if keys_pressed[K_l]:
-        pyman.life += 100
+    
 
     #allow PyMan to move only if it's on a node or the movement is opposite
     if not pyman.wall_collide():
@@ -478,14 +477,6 @@ while not game_ended:
 
     pyman.move()
 
-    if big_coin_list == [] and small_coin_list == []:
-        pyman.speed = 0
-        for ghosts in ghost_group:
-            ghosts.speed = 0
-        game_win_rect = game_over_image.get_rect()
-        window.blit(game_win_image,
-                    (WIDTH / 2 - game_win_rect.width / 2,
-                     HEIGHT / 2 - game_win_rect.height / 2))
 
     # Display update
     draw_map(map, map_bg, window)
@@ -497,6 +488,15 @@ while not game_ended:
     pyman.check_if_touch()
     pyman.life_display()
     pyman.get_points(window)
+
+    if big_coin_list == [] and small_coin_list == []:
+        pyman.speed = 0
+        for ghosts in ghost_group:
+            ghosts.speed = 0
+            game_win_rect = game_over_image.get_rect()
+            window.blit(game_win_image,
+            (WIDTH / 2 - game_win_rect.width / 2,
+            HEIGHT / 2 - game_win_rect.height / 2))
 
     pygame.display.update()
     clock.tick(FPS)
