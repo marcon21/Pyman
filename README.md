@@ -2,6 +2,7 @@
 A copy of Pacman in Pygame
 
 Developed with @strambinienea
+
 Thanks to @GiacomoTezza
 
 Requirements:
