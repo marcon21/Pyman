@@ -1,7 +1,8 @@
 # Pyman
 A copy of Pacman in Pygame
 
-Thanks to Enea Strambini and Giacomo Tezza.
+Developed with @strambinienea
+Thanks to @GiacomoTezza
 
 Requirements:
   -Python 3.x
